@@ -1,63 +1,79 @@
 import { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { depositColor, formatDeposit } from '../utils/deposit';
+
+// Leaflet 기본 마커 아이콘 경로 수정 (Vite 환경)
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
 export default function KakaoMap({ records, onSelect }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
-  const infoWindowRef = useRef(null);
 
+  // 지도 초기화 (최초 1회)
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    const { kakao } = window;
-    if (!kakao?.maps) return;
+    const container = containerRef.current;
+    if (!container || mapRef.current) return;
 
-    const map = new kakao.maps.Map(containerRef.current, {
-      center: new kakao.maps.LatLng(37.5665, 126.978),
-      level: 8,
+    const map = L.map(container, {
+      center: [37.5665, 126.978],
+      zoom: 11,
+      zoomControl: true,
     });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
     mapRef.current = map;
-    infoWindowRef.current = new kakao.maps.InfoWindow({ zIndex: 1 });
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
   }, []);
 
+  // 마커 업데이트
   useEffect(() => {
-    const { kakao } = window;
-    if (!kakao?.maps || !mapRef.current) return;
+    const map = mapRef.current;
+    if (!map) return;
 
-    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
-    infoWindowRef.current?.close();
 
     records
       .filter((r) => r.lat && r.lng)
       .forEach((record) => {
         const color = depositColor(record.deposit);
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-          <circle cx="8" cy="8" r="7" fill="${color}" stroke="white" stroke-width="2"/>
-        </svg>`;
-        const markerImage = new kakao.maps.MarkerImage(
-          `data:image/svg+xml,${encodeURIComponent(svg)}`,
-          new kakao.maps.Size(16, 16),
-          { offset: new kakao.maps.Point(8, 8) }
-        );
 
-        const marker = new kakao.maps.Marker({
-          position: new kakao.maps.LatLng(record.lat, record.lng),
-          image: markerImage,
-          map: mapRef.current,
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="
+            width:14px;height:14px;border-radius:50%;
+            background:${color};border:2px solid white;
+            box-shadow:0 1px 4px rgba(0,0,0,.4);
+          "></div>`,
+          iconSize: [14, 14],
+          iconAnchor: [7, 7],
         });
 
-        kakao.maps.event.addListener(marker, 'click', () => {
-          const content = `
-            <div style="padding:10px 14px;font-size:13px;min-width:170px;line-height:1.6">
-              <strong style="font-size:14px">${record.apartment}</strong><br>
-              <span style="color:#888">${record.dong} · ${record.floor}층 · ${record.area}㎡</span><br>
-              <span style="color:${color};font-size:16px;font-weight:700">${formatDeposit(record.deposit)}</span>
-            </div>`;
-          infoWindowRef.current.setContent(content);
-          infoWindowRef.current.open(mapRef.current, marker);
-          onSelect(record);
-        });
+        const marker = L.marker([record.lat, record.lng], { icon })
+          .addTo(map)
+          .bindPopup(`
+            <div style="min-width:160px;line-height:1.6">
+              <strong>${record.apartment}</strong><br>
+              <span style="color:#888;font-size:12px">${record.dong} · ${record.floor}층 · ${record.area}㎡</span><br>
+              <span style="color:${color};font-size:15px;font-weight:700">${formatDeposit(record.deposit)}</span>
+            </div>
+          `)
+          .on('click', () => onSelect(record));
 
         markersRef.current.push(marker);
       });

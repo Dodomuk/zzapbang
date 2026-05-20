@@ -1,10 +1,168 @@
 .app {
-  display: flex;
+  position: relative;
+  width: 100vw;
   height: 100vh;
   overflow: hidden;
 }
 
 .map-wrap {
+  width: 100%;
+  height: 100%;
+}
+
+/* 플로팅 패널 */
+.panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 280px;
+  background: rgba(22, 22, 40, 0.92);
+  backdrop-filter: blur(8px);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e0e0e0;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.panel-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.panel-subtitle {
+  font-size: 11px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.panel-section {
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.panel-select {
+  width: 100%;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: #e0e0e0;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+}
+
+.panel-select:focus {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.panel-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.panel-stat {
   flex: 1;
-  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.stat-label {
+  display: block;
+  font-size: 10px;
+  color: #666;
+  margin-top: 1px;
+}
+
+.panel-avg {
+  font-size: 12px;
+  color: #888;
+}
+
+.panel-avg strong {
+  color: #ccc;
+}
+
+.panel-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 선택된 거래 카드 */
+.selected-card {
+  padding: 12px 18px;
+}
+
+.card-apt {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.card-addr {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.card-detail {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+.card-deposit {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.panel-loading {
+  padding: 14px 18px;
+  font-size: 12px;
+  color: #555;
 }
