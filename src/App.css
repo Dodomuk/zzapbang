@@ -285,6 +285,9 @@
   color: #555;
   letter-spacing: 0.02em;
 }
+.cal-hint--error {
+  color: #ff4d4f;
+}
 
 /* ── Stats Bar ───────────────────────────────────────── */
 .stats-bar {

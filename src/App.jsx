@@ -272,7 +272,7 @@ export default function App() {
           {typeFilter === '★' ? (
             <FavoritesList
               favorites={favorites}
-              onSelect={setSelectedRecord}
+              onSelect={(r) => { setSelectedRecord(r); setSheetOpen(false); }}
               onRemove={(newFavs) => {
                 setFavorites(newFavs);
                 saveFavorites(newFavs);
@@ -284,7 +284,7 @@ export default function App() {
             <RecordList
               records={displayRecords}
               selectedRecord={selectedRecord}
-              onSelect={setSelectedRecord}
+              onSelect={(r) => { setSelectedRecord(r); setSheetOpen(false); }}
               typeFilter="전체"
             />
           )}

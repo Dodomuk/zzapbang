@@ -16,6 +16,7 @@ export default function DateCalendar({ dates, startDate, endDate, onSelect }) {
 
   // 두 번 클릭으로 기간 선택: 첫 클릭 = 시작, 두 번째 클릭 = 종료
   const [pendingStart, setPendingStart] = useState(null);
+  const [rangeError, setRangeError] = useState(false);
 
   const cells = useMemo(() => {
     const firstDow = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
@@ -32,15 +33,23 @@ export default function DateCalendar({ dates, startDate, endDate, onSelect }) {
   function handleDayClick(dateStr) {
     if (!available.has(dateStr)) return;
     if (!pendingStart) {
-      // 첫 번째 클릭: 시작 날짜 대기 상태
       setPendingStart(dateStr);
+      setRangeError(false);
     } else if (dateStr >= pendingStart) {
-      // 두 번째 클릭 (시작보다 같거나 이후): 기간 확정
-      onSelect(pendingStart, dateStr);
-      setPendingStart(null);
+      const diffDays = Math.round(
+        (new Date(dateStr + 'T00:00:00') - new Date(pendingStart + 'T00:00:00')) / 86400000
+      );
+      if (diffDays > 6) {
+        setRangeError(true);
+        setPendingStart(dateStr);
+      } else {
+        setRangeError(false);
+        onSelect(pendingStart, dateStr);
+        setPendingStart(null);
+      }
     } else {
-      // 시작보다 이전을 클릭: 새 시작으로 리셋
       setPendingStart(dateStr);
+      setRangeError(false);
     }
   }
 
@@ -117,7 +126,9 @@ export default function DateCalendar({ dates, startDate, endDate, onSelect }) {
       </div>
 
       {pendingStart && (
-        <div className="cal-hint">종료 날짜를 선택하세요</div>
+        <div className={`cal-hint${rangeError ? ' cal-hint--error' : ''}`}>
+          {rangeError ? '최대 7일까지 선택 가능합니다' : '종료 날짜를 선택하세요'}
+        </div>
       )}
     </div>
   );

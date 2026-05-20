@@ -76,8 +76,8 @@ function buildPopup(record, handlerId) {
   const station = nearestStation(record.lat, record.lng);
   const stationHtml = station ? stationSign(station) : '';
 
-  const q = encodeURIComponent(`${record.gu} ${record.dong} ${record.apartment}`);
-  const naverUrl = `https://land.naver.com/search/search.nhn?query=${q}`;
+  const q = encodeURIComponent(`${record.apartment} 아파트`);
+  const naverSearchUrl = `https://search.naver.com/search.naver?query=${q}`;
   // Kakao 로드뷰: 국내 커버리지 우수, 모바일에서 카카오맵 앱 연동
   const roadviewUrl = `https://map.kakao.com/link/roadview/${record.lat},${record.lng}`;
   // 채광·조망·소음: 네이버 블로그·카페 실거주 후기 검색
@@ -104,7 +104,7 @@ function buildPopup(record, handlerId) {
       <div style="color:${color};font-size:14px;font-weight:700;margin:5px 0">${depositLine}</div>
       ${stationHtml}
       <div style="margin-top:8px">
-        <a href="${naverUrl}" target="_blank" rel="noopener" style="${linkStyle}">🏠 집 내부 사진 보기</a>
+        <a href="${naverSearchUrl}" target="_blank" rel="noopener" style="${linkStyle}">🏠 아파트 사진·평면도 보기</a>
         <a href="${roadviewUrl}" target="_blank" rel="noopener" style="${linkStyle}">🗺️ 주변 환경 보기</a>
         <a href="${naverSearch}" target="_blank" rel="noopener" style="${linkStyle}margin-bottom:0">🌳 채광·조망·소음 확인</a>
         <button
