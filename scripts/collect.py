@@ -87,19 +87,18 @@ def main():
                 # 날짜 필터: 어제 계약 건만
                 if str(item.get("dealDay", "")).strip() != target_day:
                     continue
-                # 전세만 (monthlyRent = 0)
                 monthly = str(item.get("monthlyRent", "0") or "0").replace(",", "").strip()
-                if int(monthly or "0") != 0:
-                    continue
+                monthly_val = int(monthly or "0")
+                record_type = "월세" if monthly_val > 0 else "전세"
 
                 dong = str(item.get("umdNm", "")).strip()
                 apt_name = str(item.get("aptNm", "")).strip()
-                # 아파트명으로 지오코딩하는 게 주소보다 정확도 높음
                 geocode_key = f"서울특별시 {gu_name} {dong} {apt_name}"
 
                 coords = geocode(geocode_key, gu_name, apt_name, cache)
-                records.append({
+                record = {
                     "date": target_date,
+                    "type": record_type,
                     "gu": gu_name,
                     "dong": dong,
                     "apartment": apt_name,
@@ -109,7 +108,10 @@ def main():
                     "address": geocode_key,
                     "lat": coords["lat"] if coords else None,
                     "lng": coords["lng"] if coords else None,
-                })
+                }
+                if record_type == "월세":
+                    record["monthlyRent"] = monthly
+                records.append(record)
         except Exception as e:
             print(f"오류 ({gu_name}): {e}")
 

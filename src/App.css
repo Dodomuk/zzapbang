@@ -1,168 +1,316 @@
+/* ── Layout ─────────────────────────────────────────── */
 .app {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
   overflow: hidden;
 }
 
 .map-wrap {
-  width: 100%;
-  height: 100%;
+  flex: 0 0 45vh;
+  min-height: 200px;
 }
 
-/* 플로팅 패널 */
-.panel {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 280px;
-  background: rgba(22, 22, 40, 0.92);
-  backdrop-filter: blur(8px);
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #e0e0e0;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  z-index: 100;
-  overflow: hidden;
+.side-panel {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0f0f1a;
 }
 
+@media (min-width: 768px) {
+  .app {
+    flex-direction: row;
+  }
+  .map-wrap {
+    flex: 1;
+    height: 100dvh;
+  }
+  .side-panel {
+    flex: 0 0 340px;
+    height: 100dvh;
+    border-left: 1px solid rgba(255, 255, 255, 0.07);
+  }
+}
+
+/* ── Panel Header ────────────────────────────────────── */
 .panel-header {
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(22, 22, 40, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 200;
 }
 
-.panel-title {
-  font-size: 20px;
+.brand {
+  font-size: 18px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.5px;
+  white-space: nowrap;
 }
 
-.panel-subtitle {
-  font-size: 11px;
-  color: #666;
-  margin-top: 2px;
+/* ── Date Picker (custom dropdown) ───────────────────── */
+.date-picker {
+  position: relative;
+  flex: 1;
 }
 
-.panel-section {
-  padding: 12px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.panel-label {
-  display: block;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #555;
-  margin-bottom: 8px;
-}
-
-.panel-select {
+.date-btn {
   width: 100%;
   padding: 7px 10px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
   color: #e0e0e0;
   font-size: 14px;
   cursor: pointer;
   outline: none;
-}
-
-.panel-select:focus {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.panel-stats {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.panel-stat {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.06);
+.date-btn:focus,
+.date-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.date-caret {
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+.date-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 300;
+  list-style: none;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 8px;
-  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  max-height: 240px;
+  overflow-y: auto;
 }
 
-.stat-value {
-  display: block;
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.stat-label {
-  display: block;
-  font-size: 10px;
-  color: #666;
-  margin-top: 1px;
-}
-
-.panel-avg {
-  font-size: 12px;
-  color: #888;
-}
-
-.panel-avg strong {
+.date-option {
+  padding: 10px 12px;
+  font-size: 14px;
   color: #ccc;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  -webkit-tap-highlight-color: transparent;
 }
 
-.panel-legend {
+.date-option:last-child {
+  border-bottom: none;
+}
+
+.date-option:hover,
+.date-option:active {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.date-option--active {
+  color: #fff;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.date-option--empty {
+  color: #555;
+  cursor: default;
+}
+
+/* ── Stats Bar ───────────────────────────────────────── */
+.stats-bar {
+  flex: 0 0 auto;
+  padding: 8px 16px 10px;
+  background: rgba(16, 16, 30, 0.96);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
+}
+
+.stats-numbers {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.stats-numbers strong {
+  color: #ddd;
+}
+
+.type-filter {
+  display: flex;
+  gap: 6px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 5px 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, color 0.12s;
+}
+
+.type-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.type-btn--active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+.legend-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #aaa;
+  gap: 4px;
+  font-size: 11px;
+  color: #555;
 }
 
-.legend-dot {
+.legend-item i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Record List ─────────────────────────────────────── */
+.list-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.list-loading {
+  padding: 24px 16px;
+  font-size: 13px;
+  color: #444;
+  text-align: center;
+}
+
+.record-list {
+  list-style: none;
+  padding: 4px 0 24px;
+}
+
+.record-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.record-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.record-row:active {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.record-row--selected {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.record-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
-/* 선택된 거래 카드 */
-.selected-card {
-  padding: 12px 18px;
+.record-info {
+  flex: 1;
+  min-width: 0;
 }
 
-.card-apt {
-  font-size: 14px;
+.record-top {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.type-badge {
+  font-size: 10px;
   font-weight: 600;
-  color: #fff;
-  margin-bottom: 3px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  flex-shrink: 0;
 }
 
-.card-addr {
-  font-size: 11px;
-  color: #666;
-  margin-bottom: 5px;
+.type-badge--jeonse {
+  background: rgba(255, 255, 255, 0.1);
+  color: #aaa;
 }
 
-.card-detail {
-  font-size: 12px;
-  color: #999;
-  margin-bottom: 6px;
+.type-badge--monthly {
+  background: rgba(22, 119, 255, 0.2);
+  color: #4da6ff;
 }
 
-.card-deposit {
-  font-size: 18px;
+.record-deposit {
+  font-size: 14px;
   font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.panel-loading {
-  padding: 14px 18px;
-  font-size: 12px;
+.record-name {
+  font-size: 13px;
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.record-bottom {
+  font-size: 11px;
   color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.record-sub-deposit {
+  color: #4da6ff;
 }
