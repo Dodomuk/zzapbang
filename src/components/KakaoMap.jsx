@@ -13,6 +13,42 @@ L.Icon.Default.mergeOptions({
 
 const MONTHLY_COLOR = '#1677ff';
 
+// 서울 지하철 호선별 공식 색상
+const LINE_COLOR = {
+  '1호선': '#0052A4', '2호선': '#00A84D', '3호선': '#EF7C1C', '4호선': '#00A5DE',
+  '5호선': '#996CAC', '6호선': '#CD7C2F', '7호선': '#747F00', '8호선': '#E6186C',
+  '9호선': '#BDB092', '신분당': '#D31145', '분당선': '#F5A200',
+  '공항철도': '#0065B3', '경의중앙': '#77C4A3',
+};
+const LINE_SHORT = {
+  '1호선': '1', '2호선': '2', '3호선': '3', '4호선': '4', '5호선': '5',
+  '6호선': '6', '7호선': '7', '8호선': '8', '9호선': '9',
+  '신분당': '신', '분당선': '분', '공항철도': '공', '경의중앙': '경',
+};
+
+function stationSign(station) {
+  const lines = station.line.split('·');
+  const primaryColor = LINE_COLOR[lines[0]] || '#888';
+  const badges = lines
+    .map((l) => {
+      const bg = LINE_COLOR[l] || '#888';
+      const txt = LINE_SHORT[l] || l[0];
+      return `<span style="display:inline-flex;align-items:center;justify-content:center;` +
+        `width:20px;height:20px;border-radius:50%;background:${bg};` +
+        `color:#fff;font-size:10px;font-weight:800;flex-shrink:0">${txt}</span>`;
+    })
+    .join('');
+  return (
+    `<div style="display:inline-flex;align-items:center;gap:4px;` +
+    `margin:5px 0 8px;border:2px solid ${primaryColor};border-radius:16px;` +
+    `padding:3px 10px 3px 3px;background:#fff">` +
+    `${badges}` +
+    `<span style="font-size:12px;font-weight:700;color:#222">${station.name}</span>` +
+    `<span style="font-size:10px;color:#888">· 도보 약 ${station.walkMin}분</span>` +
+    `</div>`
+  );
+}
+
 // 팝업 공유 버튼 핸들러 레지스트리
 // Leaflet 팝업은 HTML 문자열이라 onclick에서 직접 클로저 호출이 필요
 if (!window.__zzapShareRegistry) window.__zzapShareRegistry = {};
@@ -30,9 +66,7 @@ function buildPopup(record, handlerId) {
     : formatDeposit(record.deposit);
 
   const station = nearestStation(record.lat, record.lng);
-  const stationHtml = station
-    ? `<div style="margin:4px 0 6px;font-size:11px;color:#555">🚇 ${station.name} (${station.line}) · 도보 약 ${station.walkMin}분</div>`
-    : '';
+  const stationHtml = station ? stationSign(station) : '';
 
   const q = encodeURIComponent(`${record.gu} ${record.dong} ${record.apartment}`);
   const naverUrl = `https://land.naver.com/search/search.nhn?query=${q}`;
