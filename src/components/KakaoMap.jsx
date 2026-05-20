@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { depositColor, formatDeposit, formatArea } from '../utils/deposit';
 import { nearestStation } from '../data/subway';
+import { favoriteKey, MAX_FAVORITES } from '../utils/favorites';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -49,9 +50,16 @@ function stationSign(station) {
   );
 }
 
-// 팝업 공유 버튼 핸들러 레지스트리
-// Leaflet 팝업은 HTML 문자열이라 onclick에서 직접 클로저 호출이 필요
+// 팝업 버튼 핸들러 레지스트리 (HTML 문자열 팝업 → 글로벌 클로저 패턴)
 if (!window.__zzapShareRegistry) window.__zzapShareRegistry = {};
+if (!window.__zzapFavRegistry) window.__zzapFavRegistry = {};
+
+function updateFavBtn(btn, isFav) {
+  btn.textContent = isFav ? '★ 즐겨찾기 해제' : '☆ 즐겨찾기 추가';
+  btn.style.background = isFav ? '#fadb14' : 'rgba(255,255,255,0.08)';
+  btn.style.color = isFav ? '#3A1D1D' : '#aaa';
+  btn.style.borderColor = isFav ? '#fadb14' : 'rgba(255,255,255,0.15)';
+}
 
 function markerColor(record) {
   return record.type === '월세' ? MONTHLY_COLOR : depositColor(record.deposit);
@@ -84,6 +92,11 @@ function buildPopup(record, handlerId) {
     'border-radius:5px;color:#3A1D1D;font-size:12px;font-weight:600;' +
     'cursor:pointer;text-align:center;margin-top:6px;box-sizing:border-box';
 
+  const favStyle =
+    'display:block;width:100%;padding:6px 8px;background:rgba(255,255,255,0.08);' +
+    'border:1px solid rgba(255,255,255,0.15);border-radius:5px;color:#aaa;font-size:12px;' +
+    'cursor:pointer;text-align:center;margin-top:4px;box-sizing:border-box';
+
   return `
     <div style="min-width:200px;line-height:1.5;font-size:13px">
       <div style="font-weight:700;font-size:14px;margin-bottom:2px">${record.apartment}</div>
@@ -94,6 +107,11 @@ function buildPopup(record, handlerId) {
         <a href="${naverUrl}" target="_blank" rel="noopener" style="${linkStyle}">🏠 집 내부 사진 보기</a>
         <a href="${roadviewUrl}" target="_blank" rel="noopener" style="${linkStyle}">🗺️ 주변 환경 보기</a>
         <a href="${naverSearch}" target="_blank" rel="noopener" style="${linkStyle}margin-bottom:0">🌳 채광·조망·소음 확인</a>
+        <button
+          id="${handlerId}-fav"
+          onclick="window.__zzapFavRegistry['${handlerId}']()"
+          style="${favStyle}"
+        >☆ 즐겨찾기 추가</button>
         <button
           id="${handlerId}"
           onclick="window.__zzapShareRegistry['${handlerId}']()"
@@ -136,6 +154,27 @@ function registerShareHandler(record, handlerId, depositLine) {
   };
 }
 
+function registerFavHandler(record, handlerId) {
+  window.__zzapFavRegistry[handlerId] = () => {
+    const currentFavs = window.__zzapCurrentFavorites || [];
+    const key = favoriteKey(record);
+    const idx = currentFavs.findIndex((f) => favoriteKey(f) === key);
+    let newFavs;
+    if (idx >= 0) {
+      newFavs = currentFavs.filter((_, i) => i !== idx);
+    } else {
+      if (currentFavs.length >= MAX_FAVORITES) {
+        alert(`즐겨찾기는 최대 ${MAX_FAVORITES}개까지 가능합니다.`);
+        return;
+      }
+      newFavs = [...currentFavs, record];
+    }
+    if (window.__onFavoritesChange) window.__onFavoritesChange(newFavs);
+    const favBtn = document.getElementById(`${handlerId}-fav`);
+    if (favBtn) updateFavBtn(favBtn, newFavs.some((f) => favoriteKey(f) === key));
+  };
+}
+
 export default function KakaoMap({ records, onSelect, focusRecord }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -168,10 +207,11 @@ export default function KakaoMap({ records, onSelect, focusRecord }) {
     const map = mapRef.current;
     if (!map) return;
 
-    // 기존 마커 및 공유 핸들러 정리
+    // 기존 마커 및 핸들러 정리
     markersRef.current.forEach(({ marker, handlerId }) => {
       marker.remove();
       delete window.__zzapShareRegistry[handlerId];
+      delete window.__zzapFavRegistry[handlerId];
     });
     markersRef.current = [];
 
@@ -201,6 +241,7 @@ export default function KakaoMap({ records, onSelect, focusRecord }) {
         const handlerId = `zs${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
         registerShareHandler(record, handlerId, depositLine);
+        registerFavHandler(record, handlerId);
 
         const marker = L.marker([record.lat, record.lng], { icon })
           .addTo(map)
@@ -209,7 +250,13 @@ export default function KakaoMap({ records, onSelect, focusRecord }) {
             keepInView: true,
             autoPanPadding: [20, 30],
           })
-          .on('click', () => onSelect(record));
+          .on('click', () => onSelect(record))
+          .on('popupopen', () => {
+            const favBtn = document.getElementById(`${handlerId}-fav`);
+            if (!favBtn) return;
+            const currentFavs = window.__zzapCurrentFavorites || [];
+            updateFavBtn(favBtn, currentFavs.some((f) => favoriteKey(f) === favoriteKey(record)));
+          });
 
         markersRef.current.push({ marker, record, handlerId });
       });

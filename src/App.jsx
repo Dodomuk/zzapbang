@@ -1,7 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import KakaoMap from './components/KakaoMap';
 import RecordList from './components/RecordList';
+import FavoritesList from './components/FavoritesList';
+import DateCalendar from './components/DateCalendar';
 import { formatDeposit, parseDeposit } from './utils/deposit';
+import { loadFavorites, saveFavorites } from './utils/favorites';
 import './App.css';
 
 const LEGEND_JEONSE = [
@@ -11,7 +14,7 @@ const LEGEND_JEONSE = [
   { label: '10억+', color: '#f5222d' },
 ];
 
-const TYPE_OPTIONS = ['전체', '전세', '월세'];
+const TYPE_OPTIONS = ['전체', '전세', '월세', '★'];
 
 export default function App() {
   const [dates, setDates] = useState([]);
@@ -21,6 +24,9 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [typeFilter, setTypeFilter] = useState('전체');
+  const [guFilter, setGuFilter] = useState('전체');
+  const [showGuPopup, setShowGuPopup] = useState(false);
+  const [favorites, setFavorites] = useState(() => loadFavorites());
   const datepickerRef = useRef(null);
 
   useEffect(() => {
@@ -41,6 +47,7 @@ export default function App() {
       .then((r) => r.json())
       .then((data) => {
         setRecords(data);
+        setGuFilter('전체');
         setLoading(false);
       })
       .catch(() => {
@@ -48,6 +55,18 @@ export default function App() {
         setLoading(false);
       });
   }, [selectedDate]);
+
+  useEffect(() => {
+    window.__zzapCurrentFavorites = favorites;
+  }, [favorites]);
+
+  useEffect(() => {
+    window.__onFavoritesChange = (newFavs) => {
+      setFavorites(newFavs);
+      saveFavorites(newFavs);
+    };
+    return () => { window.__onFavoritesChange = null; };
+  }, []);
 
   useEffect(() => {
     const handleOutside = (e) => {
@@ -63,10 +82,22 @@ export default function App() {
     };
   }, []);
 
-  const displayRecords =
-    typeFilter === '전체'
+  const typeFiltered =
+    typeFilter === '★'
+      ? favorites
+      : typeFilter === '전체'
       ? records
       : records.filter((r) => (r.type || '전세') === typeFilter);
+
+  const guOptions = useMemo(() => {
+    const guSet = new Set(typeFiltered.map((r) => r.gu).filter(Boolean));
+    return ['전체', ...Array.from(guSet).sort()];
+  }, [typeFiltered]);
+
+  const displayRecords =
+    typeFilter === '★' || guFilter === '전체'
+      ? typeFiltered
+      : typeFiltered.filter((r) => r.gu === guFilter);
 
   const withCoords = displayRecords.filter((r) => r.lat && r.lng);
   const deposits = displayRecords.map((r) => parseDeposit(r.deposit)).filter(Boolean);
@@ -101,23 +132,14 @@ export default function App() {
               <span className="date-caret" aria-hidden="true">▾</span>
             </button>
             {showDateDropdown && (
-              <ul className="date-dropdown">
-                {dates.length === 0 && (
-                  <li className="date-option date-option--empty">데이터 없음</li>
-                )}
-                {dates.map((d) => (
-                  <li
-                    key={d}
-                    className={`date-option${d === selectedDate ? ' date-option--active' : ''}`}
-                    onClick={() => {
-                      setSelectedDate(d);
-                      setShowDateDropdown(false);
-                    }}
-                  >
-                    {d}
-                  </li>
-                ))}
-              </ul>
+              <DateCalendar
+                dates={dates}
+                selectedDate={selectedDate}
+                onSelect={(d) => {
+                  setSelectedDate(d);
+                  setShowDateDropdown(false);
+                }}
+              />
             )}
           </div>
         </div>
@@ -139,7 +161,7 @@ export default function App() {
               {TYPE_OPTIONS.map((opt) => (
                 <button
                   key={opt}
-                  className={`type-btn${typeFilter === opt ? ' type-btn--active' : ''}`}
+                  className={`type-btn${typeFilter === opt ? ' type-btn--active' : ''}${opt === '★' ? ' type-btn--star' : ''}`}
                   onClick={() => {
                     setTypeFilter(opt);
                     setSelectedRecord(null);
@@ -149,10 +171,44 @@ export default function App() {
                     ? `전체 ${records.length}`
                     : opt === '전세'
                     ? `전세 ${jeonseCount}`
-                    : `월세 ${monthlyCount}`}
+                    : opt === '월세'
+                    ? `월세 ${monthlyCount}`
+                    : `★ ${favorites.length}`}
                 </button>
               ))}
             </div>
+
+            {typeFilter !== '★' && (
+              <div className="gu-filter-row">
+                <div className="city-filter-wrap">
+                  <button className="city-filter-btn">
+                    서울시
+                    <span className="gu-filter-caret">▾</span>
+                  </button>
+                  <span className="city-coming-soon">추후 업데이트 됩니다!</span>
+                </div>
+
+                {guOptions.length > 2 && (
+                  <>
+                    <button
+                      className={`gu-filter-btn${guFilter !== '전체' ? ' gu-filter-btn--active' : ''}`}
+                      onClick={() => setShowGuPopup(true)}
+                    >
+                      <span className="gu-filter-icon">⊞</span>
+                      {guFilter === '전체' ? '구 전체' : guFilter}
+                      <span className="gu-filter-caret">▾</span>
+                    </button>
+                    {guFilter !== '전체' && (
+                      <button
+                        className="gu-filter-clear"
+                        onClick={() => { setGuFilter('전체'); setSelectedRecord(null); }}
+                        title="필터 해제"
+                      >✕</button>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             <div className="legend-row">
               {LEGEND_JEONSE.map(({ label, color }) => (
@@ -170,17 +226,53 @@ export default function App() {
         )}
 
         <div className="list-wrap">
-          {loading ? (
+          {typeFilter === '★' ? (
+            <FavoritesList
+              favorites={favorites}
+              onSelect={setSelectedRecord}
+              onRemove={(newFavs) => {
+                setFavorites(newFavs);
+                saveFavorites(newFavs);
+              }}
+            />
+          ) : loading ? (
             <p className="list-loading">불러오는 중...</p>
           ) : (
             <RecordList
-              records={records}
+              records={displayRecords}
               selectedRecord={selectedRecord}
               onSelect={setSelectedRecord}
-              typeFilter={typeFilter}
+              typeFilter="전체"
             />
           )}
         </div>
+        {showGuPopup && (
+          <div className="gu-popup-overlay" onClick={() => setShowGuPopup(false)}>
+            <div className="gu-popup" onClick={(e) => e.stopPropagation()}>
+              <div className="gu-popup-header">
+                <span className="gu-popup-title">지역 선택</span>
+                <button className="gu-popup-close" onClick={() => setShowGuPopup(false)}>✕</button>
+              </div>
+              <div className="gu-options-grid">
+                <button
+                  className={`gu-option-btn gu-option-btn--all${guFilter === '전체' ? ' gu-option-btn--active' : ''}`}
+                  onClick={() => { setGuFilter('전체'); setSelectedRecord(null); setShowGuPopup(false); }}
+                >
+                  전체
+                </button>
+                {guOptions.slice(1).map((gu) => (
+                  <button
+                    key={gu}
+                    className={`gu-option-btn${guFilter === gu ? ' gu-option-btn--active' : ''}`}
+                    onClick={() => { setGuFilter(gu); setSelectedRecord(null); setShowGuPopup(false); }}
+                  >
+                    {gu}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

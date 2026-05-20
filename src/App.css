@@ -12,6 +12,7 @@
 }
 
 .side-panel {
+  position: relative;
   flex: 1 1 0;
   min-height: 0;
   display: flex;
@@ -133,6 +134,130 @@
   cursor: default;
 }
 
+/* ── Date Calendar ───────────────────────────────────── */
+.cal-wrap {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 300;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  padding: 12px 10px 14px;
+}
+
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: #ccc;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+}
+
+.cal-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.cal-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.cal-month-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-dow {
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #444;
+  letter-spacing: 0.02em;
+}
+
+.cal-dow--sat { color: #4a7cff; }
+.cal-dow--sun { color: #ff4d4f; }
+
+.cal-day {
+  position: relative;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 13px;
+  color: #333;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+
+.cal-day--has-data {
+  color: #bbb;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.cal-day--has-data:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.cal-day--selected {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+.cal-day--sat.cal-day--has-data { color: #4a7cff; }
+.cal-day--sun.cal-day--has-data { color: #ff4d4f; }
+.cal-day--selected { color: #fff !important; }
+
+.cal-day-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.cal-day--selected .cal-day-dot {
+  background: rgba(255, 255, 255, 0.6);
+}
+
 /* ── Stats Bar ───────────────────────────────────────── */
 .stats-bar {
   flex: 0 0 auto;
@@ -183,6 +308,216 @@
   border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
   font-weight: 600;
+}
+
+/* ── 구 필터 버튼 ─────────────────────────────────────── */
+.gu-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gu-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, color 0.12s;
+}
+
+.gu-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+}
+
+.gu-filter-btn--active {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #fff;
+  font-weight: 600;
+}
+
+.gu-filter-icon {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.gu-filter-caret {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+.gu-filter-clear {
+  width: 22px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: #666;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, color 0.12s;
+}
+
+.gu-filter-clear:hover {
+  background: rgba(245, 34, 45, 0.15);
+  border-color: rgba(245, 34, 45, 0.3);
+  color: #f5222d;
+}
+
+/* ── 시/도 필터 (추후 업데이트) ──────────────────────── */
+.city-filter-wrap {
+  position: relative;
+}
+
+.city-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: #555;
+  font-size: 12px;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.city-coming-soon {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(22, 22, 40, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 11px;
+  color: #bbb;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.city-coming-soon::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+.city-filter-wrap:hover .city-coming-soon {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── 구 선택 팝업 ────────────────────────────────────── */
+.gu-popup-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+}
+
+.gu-popup {
+  width: 100%;
+  background: #1c1c30;
+  border-radius: 18px 18px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 20px 16px 36px;
+  max-height: 72%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gu-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.gu-popup-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.gu-popup-close {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  color: #888;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gu-popup-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ccc;
+}
+
+.gu-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.gu-option-btn {
+  padding: 11px 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  color: #999;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s, color 0.1s;
+}
+
+.gu-option-btn:hover,
+.gu-option-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.gu-option-btn--active {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-weight: 700;
+}
+
+.gu-option-btn--all {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: #777;
 }
 
 .legend-row {
@@ -313,4 +648,66 @@
 
 .record-sub-deposit {
   color: #4da6ff;
+}
+
+/* ── Star filter button ──────────────────────────────── */
+.type-btn--star {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+}
+
+.type-btn--star.type-btn--active {
+  background: rgba(250, 219, 20, 0.15);
+  border-color: rgba(250, 219, 20, 0.4);
+  color: #fadb14;
+}
+
+/* ── Favorites List ──────────────────────────────────── */
+.fav-row {
+  align-items: center;
+}
+
+.fav-remove-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #555;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.fav-remove-btn:hover,
+.fav-remove-btn:active {
+  background: rgba(245, 34, 45, 0.15);
+  border-color: rgba(245, 34, 45, 0.3);
+  color: #f5222d;
+}
+
+.favlist-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: #555;
+  font-size: 13px;
+  line-height: 2;
+}
+
+.favlist-empty-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.favlist-empty-hint {
+  font-size: 12px;
+  color: #444;
+  line-height: 1.8;
+  margin-top: 4px;
 }
