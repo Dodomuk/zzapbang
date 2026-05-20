@@ -1,0 +1,36 @@
+name: 전세 실거래가 수집
+
+on:
+  schedule:
+    - cron: '0 21 * * *'  # 매일 KST 06:00 (UTC 21:00)
+  workflow_dispatch:        # 수동 실행 가능
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 의존성 설치
+        run: pip install -r scripts/requirements.txt
+
+      - name: 데이터 수집
+        env:
+          DATA_GO_KR_API_KEY: ${{ secrets.DATA_GO_KR_API_KEY }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+        run: python scripts/collect.py
+
+      - name: 변경사항 커밋 & 푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: $(date +'%Y-%m-%d') 전세 실거래가 수집"
+          git push
