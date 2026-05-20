@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { depositColor, formatDeposit, formatArea } from '../utils/deposit';
+import { nearestStation } from '../data/subway';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -28,6 +29,11 @@ function buildPopup(record, handlerId) {
     ? `보증금 ${formatDeposit(record.deposit)} / 월 ${parseInt(record.monthlyRent || 0).toLocaleString()}만`
     : formatDeposit(record.deposit);
 
+  const station = nearestStation(record.lat, record.lng);
+  const stationHtml = station
+    ? `<div style="margin:4px 0 6px;font-size:11px;color:#555">🚇 ${station.name} (${station.line}) · 도보 약 ${station.walkMin}분</div>`
+    : '';
+
   const q = encodeURIComponent(`${record.gu} ${record.dong} ${record.apartment}`);
   const naverUrl = `https://land.naver.com/search/search.nhn?query=${q}`;
   // Kakao 로드뷰: 국내 커버리지 우수, 모바일에서 카카오맵 앱 연동
@@ -49,6 +55,7 @@ function buildPopup(record, handlerId) {
       <div style="font-weight:700;font-size:14px;margin-bottom:2px">${record.apartment}</div>
       <div style="color:#888;font-size:11px">${record.dong} · ${record.floor}층 · ${formatArea(record.area)}</div>
       <div style="color:${color};font-size:14px;font-weight:700;margin:5px 0">${depositLine}</div>
+      ${stationHtml}
       <div style="margin-top:8px">
         <a href="${naverUrl}" target="_blank" rel="noopener" style="${linkStyle}">🏠 집 내부 사진 보기</a>
         <a href="${roadviewUrl}" target="_blank" rel="noopener" style="${linkStyle}">🗺️ 주변 환경 보기</a>
