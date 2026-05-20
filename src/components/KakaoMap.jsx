@@ -125,26 +125,31 @@ function buildPopup(record, handlerId) {
 function registerShareHandler(record, handlerId, depositLine) {
   window.__zzapShareRegistry[handlerId] = async () => {
     const btn = document.getElementById(handlerId);
+
+    // 딥링크: 받는 사람이 열면 해당 매물로 자동 포커스
+    const params = new URLSearchParams({
+      date: record.date,
+      apt: record.apartment,
+      dong: record.dong,
+      floor: record.floor,
+    });
+    const shareUrl = `${window.location.origin}/?${params.toString()}`;
+
     const shareText = [
       `🏠 ${record.apartment}`,
-      `${record.gu} ${record.dong} · ${record.floor}층 · ${record.area}㎡`,
+      `${record.gu} ${record.dong} · ${record.floor}층 · ${formatArea(record.area)}`,
       depositLine,
     ].join('\n');
 
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: record.apartment,
-          text: shareText,
-          url: window.location.href,
-        });
+        await navigator.share({ title: record.apartment, text: shareText, url: shareUrl });
       } catch (e) {
         // AbortError = 사용자가 공유 취소, 무시
       }
     } else {
-      // 데스크탑: 클립보드 복사 후 버튼 텍스트로 피드백
       try {
-        await navigator.clipboard.writeText(`${shareText}\n${window.location.href}`);
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
         if (btn) {
           btn.textContent = '✅ 복사됐어요!';
           setTimeout(() => { btn.textContent = '💬 카카오톡 공유'; }, 2000);

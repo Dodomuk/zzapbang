@@ -18,7 +18,12 @@ const TYPE_OPTIONS = ['전체', '전세', '월세', '★'];
 
 export default function App() {
   const [dates, setDates] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [dateRange, setDateRange] = useState({ start: null, end: null });
+  const [sharedParams, setSharedParams] = useState(() => {
+    const p = new URLSearchParams(window.location.search);
+    const date = p.get('date');
+    return date ? { date, apt: p.get('apt'), dong: p.get('dong'), floor: p.get('floor') } : null;
+  });
   const [records, setRecords] = useState([]);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,27 +39,49 @@ export default function App() {
       .then((r) => r.json())
       .then((data) => {
         setDates(data);
-        if (data.length > 0) setSelectedDate(data[0]);
+        const initialDate = (sharedParams?.date && data.includes(sharedParams.date))
+          ? sharedParams.date
+          : data[0];
+        if (initialDate) setDateRange({ start: initialDate, end: initialDate });
       })
       .catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (!selectedDate) return;
+    const { start, end } = dateRange;
+    if (!start || dates.length === 0) return;
+
+    const rangeEnd = end || start;
+    const datesInRange = dates.filter((d) => d >= start && d <= rangeEnd);
+    if (datesInRange.length === 0) { setRecords([]); return; }
+
     setLoading(true);
     setSelectedRecord(null);
-    fetch(`/data/${selectedDate}.json`)
-      .then((r) => r.json())
-      .then((data) => {
-        setRecords(data);
-        setGuFilter('전체');
-        setLoading(false);
-      })
-      .catch(() => {
-        setRecords([]);
-        setLoading(false);
-      });
-  }, [selectedDate]);
+    setGuFilter('전체');
+
+    Promise.all(
+      datesInRange.map((d) =>
+        fetch(`/data/${d}.json`).then((r) => r.json()).catch(() => [])
+      )
+    ).then((results) => {
+      setRecords(results.flat());
+      setLoading(false);
+    });
+  }, [dateRange, dates]);
+
+  useEffect(() => {
+    if (!sharedParams || records.length === 0) return;
+    const match = records.find(
+      (r) => r.apartment === sharedParams.apt &&
+             r.dong === sharedParams.dong &&
+             String(r.floor) === String(sharedParams.floor)
+    );
+    if (match) {
+      setSelectedRecord(match);
+      setSharedParams(null);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [records, sharedParams]);
 
   useEffect(() => {
     window.__zzapCurrentFavorites = favorites;
@@ -128,15 +155,23 @@ export default function App() {
               onClick={() => setShowDateDropdown((v) => !v)}
               aria-expanded={showDateDropdown}
             >
-              {selectedDate || '날짜 선택'}
+              {(() => {
+                const { start, end } = dateRange;
+                if (!start) return '날짜 선택';
+                if (!end || start === end) return start;
+                const s = new Date(start + 'T00:00:00');
+                const e = new Date(end + 'T00:00:00');
+                return `${s.getMonth()+1}/${s.getDate()} ~ ${e.getMonth()+1}/${e.getDate()}`;
+              })()}
               <span className="date-caret" aria-hidden="true">▾</span>
             </button>
             {showDateDropdown && (
               <DateCalendar
                 dates={dates}
-                selectedDate={selectedDate}
-                onSelect={(d) => {
-                  setSelectedDate(d);
+                startDate={dateRange.start}
+                endDate={dateRange.end}
+                onSelect={(start, end) => {
+                  setDateRange({ start, end });
                   setShowDateDropdown(false);
                 }}
               />
