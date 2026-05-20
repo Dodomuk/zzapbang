@@ -143,7 +143,9 @@ function registerShareHandler(record, handlerId, depositLine) {
 
     if (navigator.share) {
       try {
-        await navigator.share({ title: record.apartment, text: shareText, url: shareUrl });
+        // url 필드 제거: KakaoTalk이 url 필드를 og:url로 교체해 파라미터 손실
+        // text에 URL 포함 → 카톡 메시지에 전체 URL이 그대로 노출됨
+        await navigator.share({ title: record.apartment, text: `${shareText}\n${shareUrl}` });
       } catch (e) {
         // AbortError = 사용자가 공유 취소, 무시
       }
@@ -193,10 +195,13 @@ export default function KakaoMap({ records, onSelect, focusRecord }) {
       center: [37.5665, 126.978],
       zoom: 11,
       zoomControl: true,
+      attributionControl: false,
     });
 
+    L.control.attribution({ position: 'topright', prefix: false }).addTo(map);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
     }).addTo(map);
 
