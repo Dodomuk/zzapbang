@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { depositColor, formatDeposit } from '../utils/deposit';
+import { depositColor, formatDeposit, formatArea } from '../utils/deposit';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -47,7 +47,7 @@ function buildPopup(record, handlerId) {
   return `
     <div style="min-width:200px;line-height:1.5;font-size:13px">
       <div style="font-weight:700;font-size:14px;margin-bottom:2px">${record.apartment}</div>
-      <div style="color:#888;font-size:11px">${record.dong} · ${record.floor}층 · ${record.area}㎡</div>
+      <div style="color:#888;font-size:11px">${record.dong} · ${record.floor}층 · ${formatArea(record.area)}</div>
       <div style="color:${color};font-size:14px;font-weight:700;margin:5px 0">${depositLine}</div>
       <div style="margin-top:8px">
         <a href="${naverUrl}" target="_blank" rel="noopener" style="${linkStyle}">🏠 집 내부 사진 보기</a>

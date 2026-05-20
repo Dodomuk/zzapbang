@@ -1,5 +1,5 @@
 import { useMemo, useRef, useEffect } from 'react';
-import { depositColor, formatDeposit, parseDeposit } from '../utils/deposit';
+import { depositColor, formatDeposit, parseDeposit, formatArea } from '../utils/deposit';
 
 const MONTHLY_COLOR = '#1677ff';
 
@@ -62,7 +62,7 @@ export default function RecordList({ records, selectedRecord, onSelect, typeFilt
                 {isMonthly && r.deposit !== '0' && (
                   <span className="record-sub-deposit">보증금 {formatDeposit(r.deposit)} · </span>
                 )}
-                {r.gu} {r.dong} · {r.floor}층 · {r.area}㎡
+                {r.gu} {r.dong} · {r.floor}층 · {formatArea(r.area)}
               </div>
             </div>
           </li>

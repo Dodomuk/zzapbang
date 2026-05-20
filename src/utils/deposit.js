@@ -13,6 +13,13 @@ export function formatDeposit(str) {
   return `${amount.toLocaleString()}만`;
 }
 
+export function formatArea(sqmStr) {
+  const sqm = parseFloat(sqmStr);
+  if (!sqm) return `${sqmStr}㎡`;
+  const pyeong = Math.floor(sqm / 3.3058);
+  return `${pyeong}평 (${sqm}㎡)`;
+}
+
 export function depositColor(str) {
   const amount = parseDeposit(str);
   if (amount < 30000) return '#52c41a';
