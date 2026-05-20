@@ -1,0 +1,10 @@
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.map-wrap {
+  flex: 1;
+  position: relative;
+}

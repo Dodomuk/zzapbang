@@ -7,7 +7,7 @@ from pathlib import Path
 API_KEY = os.environ["DATA_GO_KR_API_KEY"]
 KAKAO_KEY = os.environ["KAKAO_REST_API_KEY"]
 
-DATA_DIR = Path("data")
+DATA_DIR = Path("public/data")
 CACHE_FILE = DATA_DIR / "geocode-cache.json"
 INDEX_FILE = DATA_DIR / "index.json"
 
