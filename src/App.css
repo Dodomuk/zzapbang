@@ -739,3 +739,69 @@
   line-height: 1.8;
   margin-top: 4px;
 }
+
+/* ── Leaflet Attribution (legal: kept but minimized) ── */
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  opacity: 0.2 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 3px !important;
+}
+
+.leaflet-control-attribution:hover {
+  opacity: 0.55 !important;
+}
+
+/* ── Sheet Handle (desktop: hidden) ─────────────────── */
+.sheet-handle {
+  display: none;
+}
+
+/* ── Mobile Bottom Sheet ─────────────────────────────── */
+@media (max-width: 767px) {
+  .map-wrap {
+    flex: none;
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .side-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    height: calc(100dvh - 40px);
+    transform: translateY(calc(100% - 44px));
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px 20px 0 0;
+    will-change: transform;
+    flex: none;
+    box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.6);
+  }
+
+  .side-panel--open {
+    transform: translateY(0);
+  }
+
+  .sheet-handle {
+    display: flex;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    border: none;
+    background: none;
+    width: 100%;
+    touch-action: none;
+  }
+
+  .sheet-handle-bar {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 2px;
+  }
+}

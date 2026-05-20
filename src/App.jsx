@@ -32,6 +32,7 @@ export default function App() {
   const [guFilter, setGuFilter] = useState('전체');
   const [showGuPopup, setShowGuPopup] = useState(false);
   const [favorites, setFavorites] = useState(() => loadFavorites());
+  const [sheetOpen, setSheetOpen] = useState(false);
   const datepickerRef = useRef(null);
 
   useEffect(() => {
@@ -145,7 +146,14 @@ export default function App() {
         />
       </div>
 
-      <div className="side-panel">
+      <div className={`side-panel${sheetOpen ? ' side-panel--open' : ''}`}>
+        <button
+          className="sheet-handle"
+          onClick={() => setSheetOpen((v) => !v)}
+          aria-label={sheetOpen ? '목록 닫기' : '목록 열기'}
+        >
+          <div className="sheet-handle-bar" />
+        </button>
         <div className="panel-header">
           <span className="brand">짭방</span>
 

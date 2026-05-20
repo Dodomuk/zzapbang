@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'zzapbang_favorites';
-export const MAX_FAVORITES = 10;
+export const MAX_FAVORITES = 20;
 
 export function favoriteKey(r) {
   return [r.date, r.apartment, r.dong, r.floor, r.area, r.deposit].join('|');
