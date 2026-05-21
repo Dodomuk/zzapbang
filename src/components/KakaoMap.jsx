@@ -289,9 +289,20 @@ export default function KakaoMap({ records, onSelect, focusRecord }) {
 
     map.flyTo(newCenter, targetZoom, { duration: 0.8 });
 
-    const found = markersRef.current.find(({ record }) => record === focusRecord);
+    // 참조 동일성 우선, 실패 시 key 기반 비교 (URL 공유 등 초기 로드 대응)
+    const found =
+      markersRef.current.find(({ record }) => record === focusRecord) ||
+      markersRef.current.find(({ record }) => favoriteKey(record) === favoriteKey(focusRecord));
+
     if (found) {
-      map.once('moveend', () => found.marker.openPopup());
+      let opened = false;
+      const open = () => {
+        if (opened) return;
+        opened = true;
+        found.marker.openPopup();
+      };
+      map.once('moveend', open);
+      setTimeout(open, 900);
     }
   }, [focusRecord]);
 
