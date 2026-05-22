@@ -72,7 +72,7 @@ def geocode(cache_key, gu, apt_name, cache):
 
 
 def main():
-    yesterday = datetime.now() - timedelta(days=1)
+    yesterday = datetime.utcnow() + timedelta(hours=9) - timedelta(days=1)  # KST 기준 어제
     target_date = yesterday.strftime("%Y-%m-%d")
     deal_ymd = yesterday.strftime("%Y%m")
     target_day = str(int(yesterday.strftime("%d")))  # "01" → "1"
